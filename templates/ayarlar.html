@@ -91,43 +91,47 @@
 {% if session.rol == 'admin' %}
 <div class="modal fade" id="addUserModal" tabindex="-1">
     <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">
-                    <i class="fas fa-user-plus me-2"></i>Yeni Kullanıcı Ekle
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <div class="modal-content" style="background: #393e46; color: white;">
+                <div class="modal-header" style="background: #232526; border-bottom: 1px solid #555;">
+                    <h5 class="modal-title text-white">
+                        <i class="fas fa-user-plus me-2"></i>Yeni Kullanıcı Ekle
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form method="POST" action="{{ url_for('kullanici_ekle') }}">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="ad_soyad" class="form-label text-white">Ad Soyad *</label>
+                            <input type="text" class="form-control" id="ad_soyad" name="ad_soyad" required 
+                                   style="background: #232526; border: 1px solid #555; color: white;">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="kullanici_adi" class="form-label text-white">Kullanıcı Adı *</label>
+                            <input type="text" class="form-control" id="kullanici_adi" name="kullanici_adi" required
+                                   style="background: #232526; border: 1px solid #555; color: white;">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="sifre" class="form-label text-white">Şifre *</label>
+                            <input type="password" class="form-control" id="sifre" name="sifre" required
+                                   style="background: #232526; border: 1px solid #555; color: white;">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="email" class="form-label text-white">E-posta</label>
+                            <input type="email" class="form-control" id="email" name="email"
+                                   style="background: #232526; border: 1px solid #555; color: white;">
+                        </div>
+                    </div>
+                    <div class="modal-footer" style="background: #232526; border-top: 1px solid #555;">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Kullanıcı Ekle
+                        </button>
+                    </div>
+                </form>
             </div>
-            <form method="POST" action="{{ url_for('kullanici_ekle') }}">
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="ad_soyad" class="form-label">Ad Soyad *</label>
-                        <input type="text" class="form-control" id="ad_soyad" name="ad_soyad" required>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="kullanici_adi" class="form-label">Kullanıcı Adı *</label>
-                        <input type="text" class="form-control" id="kullanici_adi" name="kullanici_adi" required>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="sifre" class="form-label">Şifre *</label>
-                        <input type="password" class="form-control" id="sifre" name="sifre" required>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="email" class="form-label">E-posta</label>
-                        <input type="email" class="form-control" id="email" name="email">
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save me-2"></i>Kullanıcı Ekle
-                    </button>
-                </div>
-            </form>
-        </div>
     </div>
 </div>
 {% endif %}
