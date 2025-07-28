@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}Kişiler - Borç Takip Sistemi{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="text-white mb-4">
+            <i class="fas fa-users me-2"></i>Kişiler Yönetimi
+        </h1>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Kişi Ekleme Formu -->
+    <div class="col-md-4 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-user-plus me-2"></i>Yeni Kişi Ekle
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('kisi_ekle') }}">
+                    <div class="mb-3">
+                        <label for="ad_soyad" class="form-label">Ad Soyad *</label>
+                        <input type="text" class="form-control" id="ad_soyad" name="ad_soyad" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="telefon" class="form-label">Telefon</label>
+                        <input type="tel" class="form-control" id="telefon" name="telefon">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="email" class="form-label">E-posta</label>
+                        <input type="email" class="form-control" id="email" name="email">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="adres" class="form-label">Adres</label>
+                        <textarea class="form-control" id="adres" name="adres" rows="3"></textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-save me-2"></i>Kişi Ekle
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Kişiler Listesi -->
+    <div class="col-md-8 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <h5 class="mb-0">
+                            <i class="fas fa-list me-2"></i>Kişiler Listesi
+                        </h5>
+                    </div>
+                    <div class="col-auto">
+                        <form method="GET" class="d-flex">
+                            <input type="text" class="form-control me-2" name="search" 
+                                   placeholder="Kişi ara..." value="{{ search }}">
+                            <button type="submit" class="btn btn-outline-light">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if kisiler %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Ad Soyad</th>
+                                <th>Telefon</th>
+                                <th>E-posta</th>
+                                <th>Adres</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for kisi in kisiler %}
+                            <tr>
+                                <td><strong>{{ kisi[1] }}</strong></td>
+                                <td>{{ kisi[2] or '-' }}</td>
+                                <td>{{ kisi[3] or '-' }}</td>
+                                <td>{{ kisi[4] or '-' }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">Henüz kişi eklenmemiş.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

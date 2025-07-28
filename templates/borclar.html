@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+
+{% block title %}Borçlar - Borç Takip Sistemi{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="text-white mb-4">
+            <i class="fas fa-credit-card me-2"></i>Borçlar Yönetimi
+        </h1>
+    </div>
+</div>
+
+<!-- Filtreleme -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-filter me-2"></i>Filtreleme ve Sıralama
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="GET" class="row">
+                    <div class="col-md-2 mb-3">
+                        <label class="form-label">Sıralama</label>
+                        <select name="sort" class="form-control">
+                            <option value="vade_tarihi" {% if request.args.get('sort') == 'vade_tarihi' %}selected{% endif %}>Vade Tarihi</option>
+                            <option value="tutar" {% if request.args.get('sort') == 'tutar' %}selected{% endif %}>Tutar</option>
+                            <option value="tarih" {% if request.args.get('sort') == 'tarih' %}selected{% endif %}>Tarih</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <label class="form-label">Sıra</label>
+                        <select name="order" class="form-control">
+                            <option value="ASC" {% if request.args.get('order') == 'ASC' %}selected{% endif %}>Artan</option>
+                            <option value="DESC" {% if request.args.get('order') == 'DESC' %}selected{% endif %}>Azalan</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <label class="form-label">Min Tutar</label>
+                        <input type="number" class="form-control" name="tutar_min" 
+                               value="{{ request.args.get('tutar_min', '') }}" step="0.01">
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <label class="form-label">Max Tutar</label>
+                        <input type="number" class="form-control" name="tutar_max" 
+                               value="{{ request.args.get('tutar_max', '') }}" step="0.01">
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <label class="form-label">&nbsp;</label>
+                        <div class="form-check mt-2">
+                            <input class="form-check-input" type="checkbox" name="only_unpaid" 
+                                   {% if request.args.get('only_unpaid') %}checked{% endif %}>
+                            <label class="form-check-label">Sadece Ödenmemiş</label>
+                        </div>
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <label class="form-label">&nbsp;</label>
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-search me-2"></i>Filtrele
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Borç Ekleme Formu -->
+    <div class="col-md-4 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-plus me-2"></i>Yeni Borç Ekle
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('borc_ekle') }}">
+                    <div class="mb-3">
+                        <label for="kisi_id" class="form-label">Kişi *</label>
+                        <select class="form-control" id="kisi_id" name="kisi_id" required>
+                            <option value="">Kişi seçin...</option>
+                            {% for kisi in kisiler %}
+                            <option value="{{ kisi[0] }}">{{ kisi[1] }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="tutar" class="form-label">Tutar (₺) *</label>
+                        <input type="number" class="form-control" id="tutar" name="tutar" 
+                               step="0.01" min="0" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="aciklama" class="form-label">Açıklama</label>
+                        <textarea class="form-control" id="aciklama" name="aciklama" rows="3"></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="vade_tarihi" class="form-label">Vade Tarihi</label>
+                        <input type="date" class="form-control" id="vade_tarihi" name="vade_tarihi">
+                    </div>
+                    
+                    <button type="submit" class="btn btn-danger w-100">
+                        <i class="fas fa-save me-2"></i>Borç Ekle
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Borçlar Listesi -->
+    <div class="col-md-8 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-list me-2"></i>Borçlar Listesi
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if borclar %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Kişi</th>
+                                <th>Tutar</th>
+                                <th>Açıklama</th>
+                                <th>Vade Tarihi</th>
+                                <th>Durum</th>
+                                <th>İşlem</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for borc in borclar %}
+                            <tr>
+                                <td><strong>{{ borc[8] }}</strong></td>
+                                <td><strong>₺{{ "%.2f"|format(borc[2]) }}</strong></td>
+                                <td>{{ borc[3] or '-' }}</td>
+                                <td>
+                                    {% if borc[4] %}
+                                        {% set vade_date = borc[4].split('-') %}
+                                        {% set today = moment().format('YYYY-MM-DD') %}
+                                        {% if borc[4] < today and borc[5] == 0 %}
+                                            <span class="overdue">{{ borc[4] }} 🔴 Gecikti</span>
+                                        {% else %}
+                                            {{ borc[4] }}
+                                        {% endif %}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if borc[5] == 1 %}
+                                        <span class="paid">✅ Ödendi</span>
+                                    {% else %}
+                                        <span class="unpaid">⏳ Bekliyor</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if borc[5] == 0 %}
+                                    <a href="{{ url_for('borc_odendi', borc_id=borc[0]) }}" 
+                                       class="btn btn-sm btn-success">
+                                        <i class="fas fa-check me-1"></i>Ödendi
+                                    </a>
+                                    {% else %}
+                                    <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-credit-card fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">Henüz borç eklenmemiş.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
