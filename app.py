@@ -488,5 +488,114 @@ def kullanici_ekle():
         flash(f'Hata oluştu: {str(e)}', 'error')
         return redirect(url_for('ayarlar'))
 
+# Şifre değiştirme
+@app.route('/sifre_degistir', methods=['POST'])
+def sifre_degistir():
+    try:
+        if 'user_id' not in session:
+            flash('Giriş yapmanız gerekiyor!', 'error')
+            return redirect(url_for('index'))
+        
+        eski_sifre = request.form.get('eski_sifre', '')
+        yeni_sifre = request.form.get('yeni_sifre', '')
+        yeni_sifre_tekrar = request.form.get('yeni_sifre_tekrar', '')
+        
+        if not all([eski_sifre, yeni_sifre, yeni_sifre_tekrar]):
+            flash('Tüm alanları doldurun!', 'error')
+            return redirect(url_for('ayarlar'))
+        
+        if yeni_sifre != yeni_sifre_tekrar:
+            flash('Yeni şifreler eşleşmiyor!', 'error')
+            return redirect(url_for('ayarlar'))
+        
+        if len(yeni_sifre) < 6:
+            flash('Şifre en az 6 karakter olmalıdır!', 'error')
+            return redirect(url_for('ayarlar'))
+        
+        conn = sqlite3.connect('borctakip.db')
+        c = conn.cursor()
+        
+        # Mevcut şifreyi kontrol et
+        hashed_eski_sifre = hashlib.sha256(eski_sifre.encode()).hexdigest()
+        c.execute('SELECT * FROM kullanicilar WHERE id = ? AND sifre = ?', 
+                  (session['user_id'], hashed_eski_sifre))
+        
+        if not c.fetchone():
+            flash('Mevcut şifre yanlış!', 'error')
+            conn.close()
+            return redirect(url_for('ayarlar'))
+        
+        # Yeni şifreyi hash'le ve güncelle
+        hashed_yeni_sifre = hashlib.sha256(yeni_sifre.encode()).hexdigest()
+        c.execute('UPDATE kullanicilar SET sifre = ? WHERE id = ?', 
+                  (hashed_yeni_sifre, session['user_id']))
+        
+        conn.commit()
+        conn.close()
+        
+        flash('Şifreniz başarıyla değiştirildi!', 'success')
+        return redirect(url_for('ayarlar'))
+        
+    except Exception as e:
+        flash(f'Hata oluştu: {str(e)}', 'error')
+        return redirect(url_for('ayarlar'))
+
+# Kullanıcı adı değiştirme
+@app.route('/kullanici_adi_degistir', methods=['POST'])
+def kullanici_adi_degistir():
+    try:
+        if 'user_id' not in session:
+            flash('Giriş yapmanız gerekiyor!', 'error')
+            return redirect(url_for('index'))
+        
+        yeni_kullanici_adi = request.form.get('yeni_kullanici_adi', '')
+        sifre = request.form.get('sifre', '')
+        
+        if not all([yeni_kullanici_adi, sifre]):
+            flash('Tüm alanları doldurun!', 'error')
+            return redirect(url_for('ayarlar'))
+        
+        if len(yeni_kullanici_adi) < 3:
+            flash('Kullanıcı adı en az 3 karakter olmalıdır!', 'error')
+            return redirect(url_for('ayarlar'))
+        
+        conn = sqlite3.connect('borctakip.db')
+        c = conn.cursor()
+        
+        # Şifreyi kontrol et
+        hashed_sifre = hashlib.sha256(sifre.encode()).hexdigest()
+        c.execute('SELECT * FROM kullanicilar WHERE id = ? AND sifre = ?', 
+                  (session['user_id'], hashed_sifre))
+        
+        if not c.fetchone():
+            flash('Şifre yanlış!', 'error')
+            conn.close()
+            return redirect(url_for('ayarlar'))
+        
+        # Kullanıcı adı kontrolü
+        c.execute('SELECT * FROM kullanicilar WHERE kullanici_adi = ? AND id != ?', 
+                  (yeni_kullanici_adi, session['user_id']))
+        if c.fetchone():
+            flash('Bu kullanıcı adı zaten kullanılıyor!', 'error')
+            conn.close()
+            return redirect(url_for('ayarlar'))
+        
+        # Kullanıcı adını güncelle
+        c.execute('UPDATE kullanicilar SET kullanici_adi = ? WHERE id = ?', 
+                  (yeni_kullanici_adi, session['user_id']))
+        
+        conn.commit()
+        conn.close()
+        
+        # Session'ı güncelle
+        session['kullanici_adi'] = yeni_kullanici_adi
+        
+        flash('Kullanıcı adınız başarıyla değiştirildi!', 'success')
+        return redirect(url_for('ayarlar'))
+        
+    except Exception as e:
+        flash(f'Hata oluştu: {str(e)}', 'error')
+        return redirect(url_for('ayarlar'))
+
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=int(os.environ.get('PORT', 8000))) 
