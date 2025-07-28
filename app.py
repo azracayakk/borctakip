@@ -448,40 +448,45 @@ def verileri_temizle():
 # Yeni kullanıcı ekleme (sadece admin)
 @app.route('/kullanici_ekle', methods=['POST'])
 def kullanici_ekle():
-    if 'user_id' not in session or session.get('rol') != 'admin':
-        flash('Bu işlem için yetkiniz yok!', 'error')
-        return redirect(url_for('ayarlar'))
-    
-    ad_soyad = request.form['ad_soyad']
-    kullanici_adi = request.form['kullanici_adi']
-    sifre = request.form['sifre']
-    email = request.form['email']
-    
-    if not all([ad_soyad, kullanici_adi, sifre]):
-        flash('Ad soyad, kullanıcı adı ve şifre zorunludur!', 'error')
-        return redirect(url_for('ayarlar'))
-    
-    conn = sqlite3.connect('borctakip.db')
-    c = conn.cursor()
-    
-    # Kullanıcı adı kontrolü
-    c.execute('SELECT * FROM kullanicilar WHERE kullanici_adi = ?', (kullanici_adi,))
-    if c.fetchone():
-        flash('Bu kullanıcı adı zaten kullanılıyor!', 'error')
+    try:
+        if 'user_id' not in session or session.get('rol') != 'admin':
+            flash('Bu işlem için yetkiniz yok!', 'error')
+            return redirect(url_for('ayarlar'))
+        
+        ad_soyad = request.form.get('ad_soyad', '')
+        kullanici_adi = request.form.get('kullanici_adi', '')
+        sifre = request.form.get('sifre', '')
+        email = request.form.get('email', '')
+        
+        if not all([ad_soyad, kullanici_adi, sifre]):
+            flash('Ad soyad, kullanıcı adı ve şifre zorunludur!', 'error')
+            return redirect(url_for('ayarlar'))
+        
+        conn = sqlite3.connect('borctakip.db')
+        c = conn.cursor()
+        
+        # Kullanıcı adı kontrolü
+        c.execute('SELECT * FROM kullanicilar WHERE kullanici_adi = ?', (kullanici_adi,))
+        if c.fetchone():
+            flash('Bu kullanıcı adı zaten kullanılıyor!', 'error')
+            conn.close()
+            return redirect(url_for('ayarlar'))
+        
+        # Şifreyi hash'le
+        hashed_sifre = hashlib.sha256(sifre.encode()).hexdigest()
+        
+        c.execute('''INSERT INTO kullanicilar (ad_soyad, kullanici_adi, sifre, email, rol)
+                     VALUES (?, ?, ?, ?, 'user')''', (ad_soyad, kullanici_adi, hashed_sifre, email))
+        
+        conn.commit()
         conn.close()
+        
+        flash('Kullanıcı başarıyla eklendi!', 'success')
         return redirect(url_for('ayarlar'))
-    
-    # Şifreyi hash'le
-    hashed_sifre = hashlib.sha256(sifre.encode()).hexdigest()
-    
-    c.execute('''INSERT INTO kullanicilar (ad_soyad, kullanici_adi, sifre, email, rol)
-                 VALUES (?, ?, ?, ?, 'user')''', (ad_soyad, kullanici_adi, hashed_sifre, email))
-    
-    conn.commit()
-    conn.close()
-    
-    flash('Kullanıcı başarıyla eklendi!', 'success')
-    return redirect(url_for('ayarlar'))
+        
+    except Exception as e:
+        flash(f'Hata oluştu: {str(e)}', 'error')
+        return redirect(url_for('ayarlar'))
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=int(os.environ.get('PORT', 8000))) 
