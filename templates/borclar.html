@@ -143,7 +143,7 @@
                                 <td>
                                     {% if borc[4] %}
                                         {% set vade_date = borc[4].split('-') %}
-                                        {% set today = moment().format('YYYY-MM-DD') %}
+                                        {% set today = '2025-07-28' %}
                                         {% if borc[4] < today and borc[5] == 0 %}
                                             <span class="overdue">{{ borc[4] }} 🔴 Gecikti</span>
                                         {% else %}
