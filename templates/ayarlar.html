@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block title %}Ayarlar - Borç Takip Sistemi{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="text-white mb-4">
+            <i class="fas fa-cog me-2"></i>Sistem Ayarları
+        </h1>
+    </div>
+</div>
+
+<!-- İstatistikler -->
+<div class="row mb-4">
+    <div class="col-md-6 mb-3">
+        <div class="summary-card">
+            <i class="fas fa-users fa-2x text-info mb-2"></i>
+            <h3>{{ kisi_sayisi }}</h3>
+            <p>Toplam Kişi</p>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-3">
+        <div class="summary-card">
+            <i class="fas fa-exchange-alt fa-2x text-warning mb-2"></i>
+            <h3>{{ islem_sayisi }}</h3>
+            <p>Toplam İşlem</p>
+        </div>
+    </div>
+</div>
+
+<!-- Veritabanı İşlemleri -->
+<div class="row mb-4">
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-database me-2"></i>Veritabanı İşlemleri
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('verileri_temizle') }}" 
+                      onsubmit="return confirm('Tüm verileriniz silinecek. Emin misiniz?')">
+                    <button type="submit" class="btn btn-danger w-100">
+                        <i class="fas fa-trash me-2"></i>Verileri Temizle
+                    </button>
+                </form>
+                
+                {% if session.rol == 'admin' %}
+                <hr>
+                <button type="button" class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#addUserModal">
+                    <i class="fas fa-user-plus me-2"></i>Yeni Kullanıcı Ekle
+                </button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>Sistem Bilgileri
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-6">
+                        <p class="mb-1"><strong>Kullanıcı:</strong></p>
+                        <p class="text-muted">{{ session.kullanici_adi }}</p>
+                    </div>
+                    <div class="col-6">
+                        <p class="mb-1"><strong>Rol:</strong></p>
+                        <p class="text-muted">{{ session.rol|title }}</p>
+                    </div>
+                </div>
+                <hr>
+                <div class="row">
+                    <div class="col-12">
+                        <p class="mb-1"><strong>Versiyon:</strong></p>
+                        <p class="text-muted">1.0.0</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Kullanıcı Ekleme Modal -->
+{% if session.rol == 'admin' %}
+<div class="modal fade" id="addUserModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-user-plus me-2"></i>Yeni Kullanıcı Ekle
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('kullanici_ekle') }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="ad_soyad" class="form-label">Ad Soyad *</label>
+                        <input type="text" class="form-control" id="ad_soyad" name="ad_soyad" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="kullanici_adi" class="form-label">Kullanıcı Adı *</label>
+                        <input type="text" class="form-control" id="kullanici_adi" name="kullanici_adi" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="sifre" class="form-label">Şifre *</label>
+                        <input type="password" class="form-control" id="sifre" name="sifre" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="email" class="form-label">E-posta</label>
+                        <input type="email" class="form-control" id="email" name="email">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>Kullanıcı Ekle
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %} 
