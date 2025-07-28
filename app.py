@@ -12,6 +12,11 @@ def init_database():
     conn = sqlite3.connect('borctakip.db')
     c = conn.cursor()
     
+    # Tüm tabloları sil ve yeniden oluştur
+    c.execute('DROP TABLE IF EXISTS islemler')
+    c.execute('DROP TABLE IF EXISTS kisiler')
+    c.execute('DROP TABLE IF EXISTS kullanicilar')
+    
     # Kullanıcılar tablosu
     c.execute('''CREATE TABLE IF NOT EXISTS kullanicilar
                  (id INTEGER PRIMARY KEY AUTOINCREMENT,
